@@ -1,6 +1,6 @@
 <?php
 
-namespace MetisFW\Adyen\Payment;
+namespace MetisFW\Adyen\Payment\HPP;
 
 use Nette\InvalidArgumentException;
 use Nette\InvalidStateException;
@@ -13,7 +13,7 @@ use Nette\Utils\Strings;
 class Payment extends Object {
 
   /** @var string */
-  private $hmacKey;
+  private $signature;
 
   /** @var string */
   private $skinCode;
@@ -82,7 +82,7 @@ class Payment extends Object {
    * Getters & Setters
    */
 
-  private function setSkinCode($value) {
+  public function setSkinCode($value) {
     $this->setValue("skinCode", $value);
   }
 
@@ -90,7 +90,7 @@ class Payment extends Object {
     return $this->skinCode;
   }
 
-  private function setMerchantAccount($value) {
+  public function setMerchantAccount($value) {
     $this->setValue("merchantAccount", $value);
   }
 
@@ -169,7 +169,7 @@ class Payment extends Object {
    * @param mixed $resURL
    */
   public function setResURL($value) {
-    $this->setValue('resUrl', $value);
+    $this->setValue('resURL', $value);
   }
 
   /**
@@ -349,7 +349,7 @@ class Payment extends Object {
   }
 
   public function isSigned() {
-    return $this->hmacKey != null && $this->skinCode != null && $this->merchantAccount != null;
+    return $this->signature != null && $this->skinCode != null && $this->merchantAccount != null;
   }
 
   public function isReady() {
@@ -363,46 +363,36 @@ class Payment extends Object {
     }
   }
 
-  public function getHPPValues() {
+  /**
+   * @return array
+   *
+   * @throws InvalidStateException
+   */
+  public function getValues() {
     if(!$this->isReady()) {
       throw new InvalidStateException('Cannot get values for HPP (Host Payment pages).'.
         ' Payment has not filled all required fields');
     }
+    $result = $this->getSignatureValues();
 
-    $result = $this->getArrayValues();
-    $result['merchantSig'] = $this->calculateSignature($this->hmacKey);
+    // filter non null/undefined fields
+    $result = array_filter($result,
+      function ($value) {
+        return $value != null;
+      }
+    );
+
+    $result['merchantSig'] = $this->signature;
     return $result;
   }
 
   /**
-   * @param string $hmacKey
-   * @param string $skinCode
-   * @param string $merchantAccount
+   * @param string $signature
    *
    * @return void
    */
-  public function sign($hmacKey, $skinCode, $merchantAccount) {
-    $this->hmacKey = $hmacKey;
-    $this->setSkinCode($skinCode);
-    $this->setMerchantAccount($merchantAccount);
-  }
-
-  private function calculateSignature($hmacKey) {
-    // The character escape function
-    $escapeval = function ($val) {
-      return str_replace(':', '\\:', str_replace('\\', '\\\\', $val));
-    };
-
-    $params = $this->getArrayValues();
-    // Sort the array by key using SORT_STRING order
-    ksort($params, SORT_STRING);
-
-    // Generate the signing data string
-    $signData = implode(":", array_map($escapeval, array_merge(array_keys($params), array_values($params))));
-
-    // base64-encode the binary result of the HMAC computation
-    $merchantSig = base64_encode(hash_hmac('sha256', $signData, pack("H*", $hmacKey), true));
-    return $merchantSig;
+  public function sign($signature) {
+    $this->signature = $signature;
   }
 
   private function setValue($propertyName, $value) {
@@ -415,7 +405,7 @@ class Payment extends Object {
   /**
    * @return array
    */
-  private function getArrayValues() {
+  public function getSignatureValues() {
     $values = array(
       'skinCode' => $this->skinCode,
       'merchantAccount' => $this->merchantAccount,
@@ -446,13 +436,7 @@ class Payment extends Object {
     }
     $values['sessionValidity'] = $sessionValidity;
 
-    // filter non null/undefined fields
-    $result = array_filter($values,
-      function ($value) {
-        return $value != null;
-      }
-    );
-    return $result;
+    return $values;
   }
 
 }

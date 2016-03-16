@@ -1,13 +1,14 @@
 <?php
 
-namespace MetisFWTests\Adyen\Payment;
+namespace MetisFWTests\Adyen\Payment\HPP;
 
-use MetisFW\Adyen\Payment\Payment;
+use MetisFW\Adyen\Payment\HPP\Payment;
+use MetisFW\Adyen\Platform\SignaturesGenerator;
 use Nette\Utils\DateTime;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once __DIR__.'/../../bootstrap.php';
+require_once __DIR__.'/../../../bootstrap.php';
 
 class PaymentTest extends TestCase {
 
@@ -20,10 +21,10 @@ class PaymentTest extends TestCase {
     $payment->setShipBeforeDate(DateTime::createFromFormat('Y-m-d', '2015-07-01'));
     $payment->setShopperLocale('en_GB');
 
-    $skinCode        = "X7hsNDWp";
-    $merchantAccount = "TestMerchant";
-    $hmacKey         = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
-    $payment->sign($hmacKey, $skinCode, $merchantAccount);
+    $payment->setSkinCode("X7hsNDWp");
+    $payment->setMerchantAccount("TestMerchant");
+    $signature = "signature";
+    $payment->sign($signature);
 
     Assert::true($payment->isSigned());
   }
@@ -40,10 +41,10 @@ class PaymentTest extends TestCase {
     $payment->setShipBeforeDate(DateTime::createFromFormat('Y-m-d', '2015-07-01'));
     $payment->setShopperLocale('en_GB');
 
-    $skinCode        = "X7hsNDWp";
-    $merchantAccount = "TestMerchant";
-    $hmacKey         = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
-    $payment->sign($hmacKey, $skinCode, $merchantAccount);
+    $payment->setSkinCode("X7hsNDWp");
+    $payment->setMerchantAccount("TestMerchant");
+    $signature = "signature";
+    $payment->sign($signature);
 
     Assert::true($payment->isSigned());
     $payment->setMerchantReference("New value");
@@ -70,7 +71,7 @@ class PaymentTest extends TestCase {
    *
    * @link https://docs.adyen.com/manuals/hpp-manual/hpp-hmac-calculation/hmac-payment-setup-sha-256
    */
-  public function testHPP() {
+  public function testValues() {
     $payment = new Payment();
     $payment->setMerchantReference('SKINTEST-1435226439255');
     $payment->setCurrencyCode('EUR');
@@ -79,14 +80,19 @@ class PaymentTest extends TestCase {
     $payment->setShipBeforeDate(DateTime::createFromFormat('Y-m-d', '2015-07-01'));
     $payment->setShopperLocale('en_GB');
 
-    $skinCode        = "X7hsNDWp";
-    $merchantAccount = "TestMerchant";
-    $hmacKey         = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
-    $payment->sign($hmacKey, $skinCode, $merchantAccount);
+    $payment->setSkinCode("X7hsNDWp");
+    $payment->setMerchantAccount("TestMerchant");
+    $secret = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
+    $generator = new SignaturesGenerator($secret);
+    $signature = $generator->generatePaymentSignature($payment);
+    $payment->sign($signature);
 
-    $hppValues = $payment->getHPPValues();
+    $payment->sign($signature);
 
-    Assert::equal('GJ1asjR5VmkvihDJxCd8yE2DGYOKwWwJCBiV3R51NFg=', $hppValues['merchantSig']);
+    $values = $payment->getValues();
+
+    Assert::equal('GJ1asjR5VmkvihDJxCd8yE2DGYOKwWwJCBiV3R51NFg=', $values['merchantSig']);
+    Assert::count(9, $values);
   }
 
   /**
@@ -100,12 +106,14 @@ class PaymentTest extends TestCase {
     $payment->setShipBeforeDate(DateTime::createFromFormat('Y-m-d', '2015-07-01'));
     $payment->setShopperLocale('en_GB');
 
-    $skinCode        = "X7hsNDWp";
-    $merchantAccount = "TestMerchant";
-    $hmacKey         = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
-    $payment->sign($hmacKey, $skinCode, $merchantAccount);
+    $payment->setSkinCode("X7hsNDWp");
+    $payment->setMerchantAccount("TestMerchant");
+    $secret = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48";
+    $generator = new SignaturesGenerator($secret);
+    $signature = $generator->generatePaymentSignature($payment);
+    $payment->sign($signature);
 
-    $payment->getHPPValues();
+    $payment->getValues();
   }
 
 }

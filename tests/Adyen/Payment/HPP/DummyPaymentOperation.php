@@ -1,9 +1,9 @@
 <?php
 
-namespace MetisFWTests\Adyen\Payment;
+namespace MetisFWTests\Adyen\Payment\HPP;
 
-use MetisFW\Adyen\Payment\BasePaymentOperation;
-use MetisFW\Adyen\Payment\Payment;
+use MetisFW\Adyen\Payment\HPP\BasePaymentOperation;
+use MetisFW\Adyen\Payment\HPP\Payment;
 use Nette\Utils\DateTime;
 
 class DummyPaymentOperation extends BasePaymentOperation {

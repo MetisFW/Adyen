@@ -2,6 +2,7 @@
 
 namespace MetisFW\Adyen;
 
+use MetisFW\Adyen\Platform\SignaturesGenerator;
 use Nette\InvalidArgumentException;
 use Nette\Object;
 
@@ -16,11 +17,23 @@ class AdyenContext extends Object {
   /** @var string */
   private $hmacKey;
 
+  /** @var bool */
+  private $live;
+
+  /** @var bool */
+  private $acceptUnsignedNotifications;
+
+  /** @var SignaturesGenerator */
+  private $signatureGenerator;
+
   /** @var array */
   private $defaultPaymentParameters = array();
 
   /** @var string */
   private $HPPEndpoint;
+
+  /** @var bool */
+  private $gaTrackingEnabled;
 
   /** @var array */
   private $HPPEndpointMapping = array(
@@ -39,6 +52,7 @@ class AdyenContext extends Object {
     $this->skinCode = $skinCode;
     $this->merchantAccount = $merchantAccount;
     $this->hmacKey = $hmacKey;
+    $this->signatureGenerator = new SignaturesGenerator($hmacKey);
   }
 
   public function getSkinCode() {
@@ -53,6 +67,10 @@ class AdyenContext extends Object {
     return $this->hmacKey;
   }
 
+  public function getSignaturesGenerator() {
+    return $this->signatureGenerator;
+  }
+
   public function setDefaultPaymentParameters(array $parameters) {
     $this->defaultPaymentParameters = $parameters;
   }
@@ -62,17 +80,48 @@ class AdyenContext extends Object {
   }
 
   public function setHPPEndpoint($endpoint) {
-    $allowedValues = array_keys($this->HPPEndpointMapping);
-    if (!array_key_exists($endpoint, $allowedValues)) {
+    if(!$this->isHppEndpointValid($endpoint)) {
+      $allowedValues = array_keys($this->HPPEndpointMapping);
       throw new InvalidArgumentException('Invalid endpoint for HPP (Hosted Payment Pages).'.
-        ' Possible values: \'' . implode(', ', $allowedValues) . '\' but ' . $endpoint . ' given.');
+        ' Possible values: \''.implode(', ', $allowedValues).'\' but '.$endpoint.' given.');
     }
 
     $this->HPPEndpoint = $endpoint;
   }
 
-  public function getHPPEndpointUrl() {
-    return $this->HPPEndpoint[$this->HPPEndpoint];
+  public function isHppEndpointValid($endpoint) {
+    return array_key_exists($endpoint, $this->HPPEndpointMapping);
+  }
+
+  public function getHPPEndpointUrl($endpoint = null) {
+    if(!$endpoint) {
+      $endpoint = $this->HPPEndpoint;
+    }
+    return $this->HPPEndpointMapping[$endpoint];
+  }
+
+  public function setLive($value) {
+    $this->live = $value;
+  }
+
+  public function isLive() {
+    return $this->live;
+  }
+
+  public function setAcceptUnsignedNotifications($value) {
+    $this->acceptUnsignedNotifications = $value;
+  }
+
+  public function acceptUnsignedNotifications() {
+    return $this->acceptUnsignedNotifications;
+  }
+
+  public function isGaTrackingEnabled() {
+    return $this->gaTrackingEnabled;
+  }
+
+  public function setGaTrackingEnabled($gaTrackingEnabled) {
+    $this->gaTrackingEnabled = $gaTrackingEnabled;
   }
 
 }

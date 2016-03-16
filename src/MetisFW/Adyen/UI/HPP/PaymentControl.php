@@ -2,52 +2,40 @@
 
 namespace MetisFW\Adyen\UI\HPP;
 
-use MetisFW\Adyen\AdyenContext;
-use MetisFW\Adyen\Payment\Payment;
-use MetisFW\Adyen\Payment\PaymentOperation;
+use MetisFW\Adyen\AdyenException;
+use MetisFW\Adyen\Payment\HPP\Payment;
+use MetisFW\Adyen\Payment\HPP\PaymentOperation;
+use Nette\Application\Request;
 use Nette\Application\UI\Control;
-
-interface PaymentControlFactory {
-
-  /**
-   * @param PaymentOperation $operation
-   * @return PaymentControl
-   */
-  public function create(PaymentOperation $operation);
-
-}
 
 class PaymentControl extends Control {
 
   /** @var PaymentOperation */
   private $operation;
 
-  /** @var AdyenContext */
-  private $adyen;
+  /** @var Request */
+  private $request;
 
   /** @var string */
   private $templateFilePath;
 
-  /** @var bool */
-  private $checkoutEnabled = true;
-
   /**
-   * @var array of callbacks, signature: function(PaymentControl $control, Payment $payment)
-   */
-  public $onCheckout;
-
-  /**
-   * @var array of callbacks, signature function(PaymentControl $control)
+   * @var array of callbacks, signature function(PaymentControl $control, PaymentResult $paymentResult)
    */
   public $onReturn;
 
   /**
-   * @param AdyenContext $adyen
+   * @var array of callbacks, signature function(PaymentControl control, $exception)
+   */
+  public $onError;
+
+  /**
+   * @param Request $request
    * @param PaymentOperation $operation
    */
-  public function __construct(AdyenContext $adyen, PaymentOperation $operation) {
+  public function __construct(Request $request, PaymentOperation $operation) {
     parent::__construct();
-    $this->adyen = $adyen;
+    $this->request = $request;
     $this->operation = $operation;
   }
 
@@ -59,19 +47,30 @@ class PaymentControl extends Control {
     return $this->templateFilePath ? $this->templateFilePath : $this->getDefaultTemplateFilePath();
   }
 
-  public function setCheckoutEnableState($value) {
-    $this->checkoutEnabled = $value;
-  }
-
-   // TODO ma to cenu?
-  public function handleCheckout() {
-    $payment = new Payment();
-    $this->onCheckout($this, $payment);
-  }
-
   public function handleReturn() {
-    // todo nejaky dalsi parametry z returnu
-    $this->onReturn($this);
+    try {
+      $resultPayment = $this->operation->handleReturn($this->request);
+    } catch (AdyenException $exception) {
+      $this->errorHandler($exception);
+      return;
+    }
+
+    $this->onReturn($this, $resultPayment);
+  }
+
+  /**
+   * @param \Exception $exception
+   *
+   * @throws AdyenException
+   *
+   * @return void
+   */
+  protected function errorHandler(\Exception $exception) {
+    if(!$this->onError) {
+      throw $exception;
+    }
+
+    $this->onError($this, $exception);
   }
 
   /**
@@ -88,7 +87,7 @@ class PaymentControl extends Control {
     $template->checkoutEnabled = $this->checkoutEnabled;
     $template->text = $text;
     $template->attrs = $attrs;
-    $template->adyen = $this->adyen;
+    $template->operation = $this->operation;
 
     $payment = $this->operation->getPayment();
     $this->setReturnUrl($payment);
