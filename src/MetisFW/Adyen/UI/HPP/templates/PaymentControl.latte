@@ -1,0 +1,15 @@
+{if $checkoutEnabled}
+  $(document).ready(function () {
+    ('.adyen-form').submit(function(event) {
+      var url = $(event.target).data('checkout-link');
+      $.get({ url: url });
+    });
+  });
+{/if}
+
+<form method="post" action="{$adyen->getHPPEndpointUrl()}" class="adyen-form" name="adyenForm" data-checkout-link="{$checkoutLink}">
+  {foreach $payment->getHPPValues() as $name => $value}
+    <input type="hidden" name="{$name}" value="{$value}" />
+  {/foreach}
+  <input type="submit" value="{$text}" n:attr="(expand)$attrs" />
+</form>

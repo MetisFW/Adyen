@@ -1,0 +1,8 @@
+adyen:
+  skinCode: aevNpEyW
+  merchantAccount: GrowJOBSroCOM
+  hmacKey: 84519D921DBC7F30A6A05C788A966E2EB725AF8D9BF44360D80BE397037E138E
+  defaultPaymentParameters:
+    currencyCode: EUR
+  HPP:
+    endpoint: select
