@@ -138,9 +138,8 @@ class Payment extends Object {
   }
 
   public function setPaymentAmount($value) {
-    if(!is_integer($value)) {
-      throw new InvalidArgumentException("Property paymentAmount has to be integer, ".
-        get_class($value)." given");
+    if(!is_numeric($value)) {
+      throw new InvalidArgumentException("Property paymentAmount has to be integer, ".gettype($value)." given");
     }
     $this->setValue("paymentAmount", $value);
   }
