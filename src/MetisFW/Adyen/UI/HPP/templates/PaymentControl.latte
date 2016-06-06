@@ -1,10 +1,9 @@
 <form method="post" action="{$operation->getEndpointUrl()}"
   class="adyen-form"
   name="adyenForm"
-  data-merchant-reference="{$payment->getMerchantReference()}"
-  data-checkout-link="{$checkoutLink}">
+  data-merchant-reference="{$payment->getMerchantReference()}">
   {foreach $payment->getValues() as $name => $value}
     <input type="hidden" name="{$name}" value="{$value}"/>
   {/foreach}
-  <input type="submit" value="{$text}" n:attr="(expand)$attrs" />
+  <input type="submit" class="adyen-submit-button" onclick="{$checkoutLink}" value="{$text}" n:attr="(expand)$attrs" />
 </form>
