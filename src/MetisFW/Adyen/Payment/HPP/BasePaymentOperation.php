@@ -4,8 +4,6 @@ namespace MetisFW\Adyen\Payment\HPP;
 
 use MetisFW\Adyen\AdyenContext;
 use MetisFW\Adyen\Helpers\GaTracking;
-use MetisFW\Adyen\Payment\Platform\Address;
-use MetisFW\Adyen\Payment\Platform\Shopper;
 use MetisFW\Adyen\SecurityException;
 use Nette\Application\Request;
 use Nette\InvalidArgumentException;

@@ -6,8 +6,8 @@ use MetisFW\Adyen\AdyenContext;
 use MetisFW\Adyen\Payment\HPP\Payment;
 use MetisFW\Adyen\Payment\HPP\PaymentResult;
 use MetisFW\Adyen\Payment\Notification\NotificationRequestItem;
-use MetisFW\Adyen\Payment\Platform\Address;
-use MetisFW\Adyen\Payment\Platform\Shopper;
+use MetisFW\Adyen\Payment\HPP\Address;
+use MetisFW\Adyen\Payment\HPP\Shopper;
 use Nette\Object;
 
 class SignaturesGenerator extends Object {

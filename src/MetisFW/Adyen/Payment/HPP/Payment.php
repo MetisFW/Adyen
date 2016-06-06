@@ -2,8 +2,6 @@
 
 namespace MetisFW\Adyen\Payment\HPP;
 
-use MetisFW\Adyen\Payment\Platform\Address;
-use MetisFW\Adyen\Payment\Platform\Shopper;
 use Nette\InvalidArgumentException;
 use Nette\InvalidStateException;
 use Nette\Object;

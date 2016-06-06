@@ -1,6 +1,6 @@
 <?php
 
-namespace MetisFW\Adyen\Payment\Platform;
+namespace MetisFW\Adyen\Payment\HPP;
 
 use Nette\InvalidArgumentException;
 use Nette\Object;
