@@ -6,6 +6,8 @@ use MetisFW\Adyen\AdyenContext;
 use MetisFW\Adyen\Payment\HPP\Payment;
 use MetisFW\Adyen\Payment\HPP\PaymentResult;
 use MetisFW\Adyen\Payment\Notification\NotificationRequestItem;
+use MetisFW\Adyen\Payment\Platform\Address;
+use MetisFW\Adyen\Payment\Platform\Shopper;
 use Nette\Object;
 
 class SignaturesGenerator extends Object {
@@ -39,6 +41,28 @@ class SignaturesGenerator extends Object {
    */
   public function generatePaymentResultSignature(PaymentResult $paymentResult) {
     $values = $paymentResult->getSignatureValues();
+    $values = $this->filterValues($values);
+    return $this->generateSignature($values);
+  }
+
+  /**
+   * @param Address $address
+   *
+   * @return string
+   */
+  public function generateAddressSignature(Address $address) {
+    $values = $address->getSignatureValues();
+    $values = $this->filterValues($values);
+    return $this->generateSignature($values);
+  }
+
+  /**
+   * @param Shopper $shopper
+   *
+   * @return string
+   */
+  public function generateShopperSignature(Shopper $shopper) {
+    $values = $shopper->getSignatureValues();
     $values = $this->filterValues($values);
     return $this->generateSignature($values);
   }

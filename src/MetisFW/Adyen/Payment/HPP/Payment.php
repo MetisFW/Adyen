@@ -2,6 +2,8 @@
 
 namespace MetisFW\Adyen\Payment\HPP;
 
+use MetisFW\Adyen\Payment\Platform\Address;
+use MetisFW\Adyen\Payment\Platform\Shopper;
 use Nette\InvalidArgumentException;
 use Nette\InvalidStateException;
 use Nette\Object;
@@ -78,9 +80,38 @@ class Payment extends Object {
   /** @var string */
   private $resURL;
 
+  /** @var Address */
+  private $deliveryAddress;
+
+  /** @var Address */
+  private $billingAddress;
+
+  /** @var Shopper|null */
+  private $shopper;
+
   /*
    * Getters & Setters
    */
+
+  public function setShopper(Shopper $shopper = null) {
+     $this->shopper = $shopper;
+  }
+
+  public function setBillingAddress(Address $address) {
+    $this->billingAddress = $address;
+  }
+
+  public function getBillingAddress() {
+    return $this->billingAddress;
+  }
+
+  public function setDeliveryAddress(Address $address) {
+    $this->deliveryAddress = $address;
+  }
+
+  public function getDeliveryAddress() {
+    return $this->deliveryAddress;
+  }
 
   public function setSkinCode($value) {
     $this->setValue("skinCode", $value);
@@ -165,9 +196,7 @@ class Payment extends Object {
     return $this->resURL;
   }
 
-  /**
-   * @param mixed $resURL
-   */
+
   public function setResURL($value) {
     $this->setValue('resURL', $value);
   }
@@ -179,9 +208,6 @@ class Payment extends Object {
     return $this->offerEmail;
   }
 
-  /**
-   * @param mixed $offerEmail
-   */
   public function setOfferEmail($value) {
     $this->setValue('offerEmail', $value);
   }
@@ -193,9 +219,6 @@ class Payment extends Object {
     return $this->shopperStatement;
   }
 
-  /**
-   * @param mixed $shopperStatement
-   */
   public function setShopperStatement($value) {
     $this->setValue('shopperStatement', $value);
   }
@@ -207,9 +230,6 @@ class Payment extends Object {
     return $this->issuerId;
   }
 
-  /**
-   * @param mixed $issuerId
-   */
   public function setIssuerId($value) {
     $this->setValue('issuerId', $value);
   }
@@ -221,9 +241,6 @@ class Payment extends Object {
     return $this->brandCode;
   }
 
-  /**
-   * @param mixed $brandCode
-   */
   public function setBrandCode($value) {
     $this->setValue('brandCode', $value);
   }
@@ -235,9 +252,6 @@ class Payment extends Object {
     return $this->offset;
   }
 
-  /**
-   * @param mixed $offset
-   */
   public function setOffset($value) {
     $this->setValue('offset', $value);
   }
@@ -249,9 +263,6 @@ class Payment extends Object {
     return $this->blockedMethods;
   }
 
-  /**
-   * @param mixed $blockedMethods
-   */
   public function setBlockedMethods($value) {
     $this->setValue('blockedMethods', $value);
   }
@@ -263,9 +274,6 @@ class Payment extends Object {
     return $this->allowedMethods;
   }
 
-  /**
-   * @param mixed $allowedMethods
-   */
   public function setAllowedMethods($value) {
     $this->setValue('allowedMethods', $value);
   }
@@ -277,9 +285,6 @@ class Payment extends Object {
     return $this->shopperReference;
   }
 
-  /**
-   * @param mixed $shopperReference
-   */
   public function setShopperReference($value) {
     $this->setValue('shopperReference', $value);
   }
@@ -291,9 +296,6 @@ class Payment extends Object {
     return $this->shopperEmail;
   }
 
-  /**
-   * @param mixed $shopperEmail
-   */
   public function setShopperEmail($value) {
     $this->setValue('shopperEmail', $value);
   }
@@ -305,9 +307,6 @@ class Payment extends Object {
     return $this->countryCode;
   }
 
-  /**
-   * @param mixed $countryCode
-   */
   public function setCountryCode($value) {
     $this->setValue('countryCode', $value);
   }
@@ -319,9 +318,6 @@ class Payment extends Object {
     return $this->merchantReturnData;
   }
 
-  /**
-   * @param mixed $merchantReturnData
-   */
   public function setMerchantReturnData($value) {
     $this->setValue('merchantReturnData', $value);
   }
@@ -333,9 +329,6 @@ class Payment extends Object {
     return $this->orderData;
   }
 
-  /**
-   * @param mixed $orderData
-   */
   public function setOrderData($value) {
     $this->setValue('orderData', $value);
   }
@@ -377,7 +370,7 @@ class Payment extends Object {
 
     // filter non null/undefined fields
     $result = array_filter($result,
-      function ($value) {
+      function($value) {
         return $value != null;
       }
     );
@@ -394,6 +387,50 @@ class Payment extends Object {
   public function sign($signature) {
     $this->signature = $signature;
   }
+
+  /**
+   * @param string $signature
+   *
+   * @return void
+   */
+  public function signShopper($signature) {
+    if(!$this->shopper) {
+      throw new InvalidStateException("Can not sign missing shopper.");
+    }
+    $this->shopper->sign($signature);
+  }
+
+  /**
+   * @return Shopper|null
+   */
+  public function getShopper() {
+    return $this->shopper;
+  }
+
+  /**
+   * @param string $signature
+   *
+   * @return void
+   */
+  public function signBillingAddress($signature) {
+    if(!$this->billingAddress) {
+      throw new InvalidStateException("Can not sign missing billing address.");
+    }
+    $this->billingAddress->sign($signature);
+  }
+
+  /**
+   * @param string $signature
+   *
+   * @return void
+   */
+  public function signDeliveryAddress($signature) {
+    if(!$this->deliveryAddress) {
+      throw new InvalidStateException("Can not sign missing delivery address.");
+    }
+    $this->deliveryAddress->sign($signature);
+  }
+
 
   private function setValue($propertyName, $value) {
     if($this->isSigned()) {
@@ -431,7 +468,7 @@ class Payment extends Object {
 
     // php converts UTC timezone to '+00:00' instead to 'Z'
     $sessionValidity = $this->sessionValidity->format(\DateTime::ATOM);
-    if (Strings::endsWith($sessionValidity, '+00:00')) {
+    if(Strings::endsWith($sessionValidity, '+00:00')) {
       $sessionValidity = Strings::replace($sessionValidity, '|\+00:00|', 'Z');
     }
     $values['sessionValidity'] = $sessionValidity;
