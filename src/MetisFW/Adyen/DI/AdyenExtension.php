@@ -2,8 +2,6 @@
 
 namespace MetisFW\Adyen\DI;
 
-use Nette\Configurator;
-use Nette\DI\Compiler;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\Validators;
 
@@ -11,7 +9,8 @@ class AdyenExtension extends CompilerExtension {
 
   private $defaults = array(
     'acceptUnsignedNotifications' => false,
-    'gaTrackingEnabled' => true
+    'gaTrackingEnabled' => true,
+    'defaultPaymentParameters' => array()
   );
 
   public function loadConfiguration() {
@@ -30,7 +29,7 @@ class AdyenExtension extends CompilerExtension {
       $config['merchantAccount'],
       $config['hmacKey']
     );
-    $contextName =  $this->prefix('AdyenContext');
+    $contextName = $this->prefix('AdyenContext');
     $builder->addDefinition($contextName)
       ->setClass('MetisFW\Adyen\AdyenContext', $contextArguments)
       ->addSetup('setDefaultPaymentParameters', array($config['defaultPaymentParameters']))
