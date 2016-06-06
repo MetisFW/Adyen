@@ -91,13 +91,13 @@ class PaymentOperationTest extends TestCase {
     $operation = $this->operation;
 
     $onReturnCallsCount = 0;
-    $operation->onReturn[] = function (DummyPaymentOperation $this, PaymentResult $paymentResult)
+    $operation->onReturn[] = function (DummyPaymentOperation $operation, PaymentResult $paymentResult)
     use (&$onReturnCallsCount) {
       $onReturnCallsCount++;
     };
 
     $onCancelCallsCount = 0;
-    $operation->onCancel[] = function (DummyPaymentOperation $this, PaymentResult $paymentResult)
+    $operation->onCancel[] = function (DummyPaymentOperation $operation, PaymentResult $paymentResult)
     use (&$onCancelCallsCount) {
       $onCancelCallsCount++;
     };
@@ -121,13 +121,13 @@ class PaymentOperationTest extends TestCase {
     $operation = $this->operation;
 
     $onReturnCallsCount = 0;
-    $operation->onReturn[] = function (DummyPaymentOperation $this, PaymentResult $paymentResult)
+    $operation->onReturn[] = function (DummyPaymentOperation $operation, PaymentResult $paymentResult)
     use (&$onReturnCallsCount) {
       $onReturnCallsCount++;
     };
 
     $onCancelCallsCount = 0;
-    $operation->onCancel[] = function (DummyPaymentOperation $this, PaymentResult $paymentResult)
+    $operation->onCancel[] = function (DummyPaymentOperation $operation, PaymentResult $paymentResult)
     use (&$onCancelCallsCount) {
       $onCancelCallsCount++;
     };

@@ -51,37 +51,37 @@ class BasicNotificationOperationTest extends TestCase {
     $operation = new BasicNotificationOperation($this->adyen);
 
     $this->onNotificationCounter = 0;
-    $operation->onNotification = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onNotification[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onNotificationCounter++;
     };
 
     $this->onFailedCounter = 0;
-    $operation->onFailed = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onFailed[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onFailedCounter++;
     };
 
     $this->onSuccessCounter = 0;
-    $operation->onSuccess = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onSuccess[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onSuccessCounter++;
     };
 
     $this->onAuthorisedCounter = 0;
-    $operation->onAuthorised = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onAuthorised[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onAuthorisedCounter++;
     };
 
     $this->onCancelledCounter = 0;
-    $operation->onCancelled = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onCancelled[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onCancelledCounter++;
     };
 
     $this->onRefundCounter = 0;
-    $operation->onRefund = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onRefund[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onRefundCounter++;
     };
 
     $this->onOtherCounter = 0;
-    $operation->onOther = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
+    $operation->onOther[] = function (BasicNotificationOperation $operation, NotificationRequestItem $item) {
       $this->onOtherCounter++;
     };
 
