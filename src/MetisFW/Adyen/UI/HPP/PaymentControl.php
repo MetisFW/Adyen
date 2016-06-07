@@ -30,11 +30,6 @@ class PaymentControl extends Control {
   public $onError;
 
   /**
-   * @var array of callbacks, signature function(PaymentControl control)
-   */
-  public $onCheckout;
-
-  /**
    * @param Request $request
    * @param PaymentOperation $operation
    */
@@ -88,7 +83,6 @@ class PaymentControl extends Control {
     $template = $this->template;
     $templateFilePath = $this->getTemplateFilePath();
     $template->setFile($templateFilePath);
-    $template->checkoutLink = $this->link('//checkout!');
     $template->text = $text;
     $template->attrs = $attrs;
     $template->operation = $this->operation;
@@ -105,13 +99,6 @@ class PaymentControl extends Control {
 
   private function setReturnUrl(Payment $payment) {
     $payment->setResURL($this->link('//return!'));
-  }
-
-  /**
-   * @return void
-   */
-  public function handleCheckout() {
-    $this->onCheckout($this);
   }
 
 }
