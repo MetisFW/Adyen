@@ -78,10 +78,10 @@ class Payment extends Object {
   /** @var string */
   private $resURL;
 
-  /** @var Address */
+  /** @var Address|null */
   private $deliveryAddress;
 
-  /** @var Address */
+  /** @var Address|null */
   private $billingAddress;
 
   /** @var Shopper|null */
@@ -92,7 +92,7 @@ class Payment extends Object {
    */
 
   public function setShopper(Shopper $shopper = null) {
-     $this->shopper = $shopper;
+    $this->shopper = $shopper;
   }
 
   public function setBillingAddress(Address $address) {
@@ -192,7 +192,6 @@ class Payment extends Object {
   public function getResURL() {
     return $this->resURL;
   }
-
 
   public function setResURL($value) {
     $this->setValue('resURL', $value);
@@ -371,8 +370,20 @@ class Payment extends Object {
         return $value != null;
       }
     );
-
     $result['merchantSig'] = $this->signature;
+
+    if($this->getShopper()) {
+      $result = array_merge($result, $this->getShopper()->getValues());
+    }
+
+    if($this->getDeliveryAddress()) {
+      $result = array_merge($result, $this->getDeliveryAddress()->getValues());
+    }
+
+    if($this->getBillingAddress()) {
+      $result = array_merge($result, $this->getBillingAddress()->getValues());
+    }
+
     return $result;
   }
 
@@ -427,7 +438,6 @@ class Payment extends Object {
     }
     $this->deliveryAddress->sign($signature);
   }
-
 
   private function setValue($propertyName, $value) {
     if($this->isSigned()) {

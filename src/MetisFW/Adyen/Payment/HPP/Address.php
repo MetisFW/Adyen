@@ -3,6 +3,7 @@
 namespace MetisFW\Adyen\Payment\HPP;
 
 use Nette\InvalidArgumentException;
+use Nette\InvalidStateException;
 use Nette\Object;
 
 /**
@@ -165,6 +166,35 @@ class Address extends Object {
       'country' => $this->country
     );
     return $values;
+  }
+
+  public function isReady() {
+    return $this->isSigned() && $this->street != null && $this->houseNumberOrName != null &&
+    $this->city != null && $this->postalCode != null && $this->stateOrProvince != null &&
+    $this->country != null && $this->type != null;
+  }
+
+  public function getValues() {
+    if(!$this->isReady()) {
+      throw new InvalidStateException('Cannot get values for HPP (Host Payment pages) address. '.
+        'Payment address has not filled all required fields');
+    }
+    $result = $this->getSignatureValues();
+
+    // filter non null/undefined fields
+    $result = array_filter($result,
+      function($value) {
+        return $value != null;
+      }
+    );
+
+    foreach($result as $key => $value) {
+      $result['shopper.'.$key] = $value;
+    }
+    $result['shopperType'] = $this->getType();
+    $result['shopperAddressSig'] = $this->signature;
+
+    return $result;
   }
 
 }

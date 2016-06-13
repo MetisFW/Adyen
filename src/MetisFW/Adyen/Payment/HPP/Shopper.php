@@ -3,6 +3,7 @@
 namespace MetisFW\Adyen\Payment\HPP;
 
 use Nette\InvalidArgumentException;
+use Nette\InvalidStateException;
 use Nette\Object;
 
 /**
@@ -235,6 +236,43 @@ class Shopper extends Object {
       'telephoneNumber' => $this->telephoneNumber
     );
     return $values;
+  }
+
+  public function isSignedRequired() {
+    return $this->getType() ? false : true;
+  }
+
+  public function isReady() {
+    if($this->isSignedRequired() && !$this->isSigned()) {
+      return false;
+    }
+    return $this->firstName != null && $this->infix != null &&
+    $this->lastName != null && $this->gender != null && $this->dateOfBirthMonth != null &&
+    $this->dateOfBirthDayOfMonth != null && $this->dateOfBirthYear != null && $this->stateOrProvince != null &&
+    $this->country != null && $this->telephoneNumber != null && $this->type != null;
+  }
+
+  public function getValues() {
+    if(!$this->isReady()) {
+      throw new InvalidStateException('Cannot get values for HPP (Host Payment pages) shopper.'.
+        ' Payment shopper has not filled all required fields');
+    }
+    $result = $this->getSignatureValues();
+
+    // filter non null/undefined fields
+    $result = array_filter($result,
+      function($value) {
+        return $value != null;
+      }
+    );
+
+    foreach($result as $key => $value) {
+      $result['shopper.'.$key] = $value;
+    }
+    $result['shopperType'] = $this->getType();
+    $result['shopperAddressSig'] = $this->signature;
+
+    return $result;
   }
 
 }
