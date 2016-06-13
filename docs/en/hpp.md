@@ -11,7 +11,7 @@ use \MetisFW\Adyen\Payment\HPP\SimplePaymentOperation;
 use \MetisFW\Adyen\Payment\UI\HPP\PaymentControlFactory;
 use Nette\Application\UI\Presenter;
 use Nette\Utils\DateTime;
-use \MetisFW\Adyen\Payment\HPP\ResultPayment;
+use \MetisFW\Adyen\Payment\HPP\PaymentResult;
 
 class MyPresenter extends Presenter {
 
@@ -26,7 +26,7 @@ class MyPresenter extends Presenter {
   
  
     //called after the payment completed the payment process
-    $control->onReturn[] = function(PaymentControl $control, ResultPayment $resultPayment) {
+    $control->onReturn[] = function(PaymentControl $control, PaymentResult $paymentResult) {
       //something
     };
   
@@ -44,7 +44,7 @@ class MyPresenter extends Presenter {
 
 ```latte
 #just
-{control payPalPaymentButton}
+{control adyenPaymentButton}
 
 #or
 
@@ -83,10 +83,10 @@ class OrderAdyenOperation extends BasePaymentOperation {
   private $order;
 
   /**
-   * @param AdyneContext $context
+   * @param AdyenContext $context
    * @param mixed $order some data - object/array/...
    */
-  public function __construct(PayPalContext $context, $order) {
+  public function __construct(AdyenContext $context, $order) {
     parent::__construct($context);
     $this->order = $order;
   }
@@ -104,7 +104,7 @@ class OrderAdyenOperation extends BasePaymentOperation {
 
 ###### Events in Operation
 ```php
-  public function createComponentPayPalPaymentButton(FactorType $factory) {
+  public function createComponentAdyenPaymentButton(FactorType $factory) {
     $operation = $factory->create();
     
     // called when payment was authorised

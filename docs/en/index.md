@@ -19,7 +19,7 @@ adyen:
   hppEndpoint: select
   gaTracking: false # default value is true 
   acceptUnsignedNotifications: true # default value is false
-  defaultPaymentParameters:
+  defaultPaymentParameters: # optional
     currencyCode: EUR
 ```
 
